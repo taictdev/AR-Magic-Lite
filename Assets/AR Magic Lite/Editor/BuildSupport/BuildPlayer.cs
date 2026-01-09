@@ -154,6 +154,7 @@ public static class BuildPlayer
     {
         EditorUserBuildSettings.buildAppBundle = true;
         PlayerSettings.applicationIdentifier = PackageName;
+        PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, PackageName);
         // PlayerSettings.Android.useCustomKeystore = true;
 
         // Key store
@@ -173,7 +174,7 @@ public static class BuildPlayer
     public static void AutoBuildAPK()
     {
         EditorUserBuildSettings.buildAppBundle = false;
-        PlayerSettings.applicationIdentifier = PackageName;
+        PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, PackageName);
         PlayerSettings.Android.useCustomKeystore = false;
 
         // Key store
