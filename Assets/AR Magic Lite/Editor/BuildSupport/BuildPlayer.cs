@@ -144,7 +144,7 @@ public static class BuildPlayer
 
     private static string GetOutputPath(BuildTarget target)
     {
-        string outputPath = $"Build/{target}/AR Magic Lite";
+        string outputPath = $"Build/{target}/AR-Magic-Lite";
 
         return outputPath;
     }
