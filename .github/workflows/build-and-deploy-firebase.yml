@@ -1,0 +1,101 @@
+name: Unity Build & Deploy Firebase
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_version:
+        description: 'Enter build version (ex: 1.0.3)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-and-deploy:
+    name: Unity Build & Deploy Firebase
+    runs-on: self-hosted
+
+    env:
+      BUILD_VERSION: ${{ github.event.inputs.build_version }}
+
+    steps:
+    # -----------------------------
+    # 1. Checkout source
+    # -----------------------------
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # -----------------------------
+    # 2. Create build folder
+    # -----------------------------
+    - name: Create build folder
+      shell: cmd
+      run: |
+        if not exist Build\Android (
+          mkdir Build\Android
+        )
+
+    # -----------------------------
+    # 3. Build Android APK
+    # -----------------------------
+    - name: Build Unity Project (Android)
+      shell: cmd
+      run: |
+        echo === Building Android ===
+        echo Build Version: %BUILD_VERSION%
+
+        "C:\Program Files\Unity\Hub\Editor\6000.2.7f2\Editor\Unity.exe" ^
+          -quit -batchmode -nographics ^
+          -projectPath "%GITHUB_WORKSPACE%" ^
+          -executeMethod BuildPlayer.AutoBuildAPK ^
+          -logFile Build\Android\unity-build.log
+
+    # -----------------------------
+    # 4. Verify APK exists
+    # -----------------------------
+    - name: Verify APK
+      shell: cmd
+      run: |
+        if not exist Build\Android\AR Magic Lite.apk (
+          echo ❌ APK not found
+          exit /b 1
+        )
+
+    # -----------------------------
+    # 5. Upload Artifact (optional)
+    # -----------------------------
+    - name: Upload Android Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: Unity-Android-Build
+        path: Build\Android\AR Magic Lite.apk
+
+    # -----------------------------
+    # 6. Install Firebase CLI
+    # -----------------------------
+    - name: Install Firebase CLI
+      shell: cmd
+      run: |
+        firebase --version || npm install -g firebase-tools
+
+    # -----------------------------
+    # 7. Create Firebase service account file
+    # -----------------------------
+    - name: Create Firebase service account file
+      shell: cmd
+      env:
+        FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      run: |
+        echo %FIREBASE_SERVICE_ACCOUNT% > firebase_key.json
+
+    # -----------------------------
+    # 8. Upload APK to Firebase App Distribution
+    # -----------------------------
+    - name: Upload to Firebase App Distribution
+      shell: cmd
+      env:
+        FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+      run: |
+        set GOOGLE_APPLICATION_CREDENTIALS=%CD%\firebase_key.json
+        firebase appdistribution:distribute Build\Android\AR Magic Lite.apk ^
+        --app %FIREBASE_APP_ID% ^
+        --groups testers ^
+        --release-notes "Build version %BUILD_VERSION%"
