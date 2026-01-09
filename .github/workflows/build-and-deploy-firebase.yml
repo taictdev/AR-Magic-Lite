@@ -54,7 +54,7 @@ jobs:
     - name: Verify APK
       shell: cmd
       run: |
-        if not exist Build\Android\AR Magic Lite.apk (
+        if not exist Build\Android\AR-Magic-Lite.apk (
           echo ❌ APK not found
           exit /b 1
         )
@@ -66,7 +66,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Unity-Android-Build
-        path: Build\Android\AR Magic Lite.apk
+        path: Build\Android\AR-Magic-Lite.apk
 
     # -----------------------------
     # 6. Install Firebase CLI
@@ -95,7 +95,7 @@ jobs:
         FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
       run: |
         set GOOGLE_APPLICATION_CREDENTIALS=%CD%\firebase_key.json
-        firebase appdistribution:distribute Build\Android\AR Magic Lite.apk ^
+        firebase appdistribution:distribute Build\Android\AR-Magic-Lite.apk ^
         --app %FIREBASE_APP_ID% ^
         --groups testers ^
         --release-notes "Build version %BUILD_VERSION%"
