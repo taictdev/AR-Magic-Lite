@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
@@ -81,13 +82,18 @@ public static class BuildPlayer
 
     private static void PerformBuildPlayer(string outputPath, BuildTarget target, BuildOptions options = BuildOptions.None)
     {
-        string[] scenes = {
-            SplashScenePath,
-        };
-
         PlayerSettings.SplashScreen.show = false;
-
-        BuildPipeline.BuildPlayer(scenes, outputPath, target, options);
+        string[] scenes; // Get the list of scenes to build 
+        scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
+        BuildPlayerOptions buildOptions = new()
+        {
+            scenes = scenes,
+            locationPathName = outputPath,
+            target = target,
+            options = options
+        };
+        
+        BuildPipeline.BuildPlayer(buildOptions);
     }
 
     private static void BuildMobile(string outputPath, BuildTarget target, BuildTargetGroup targetGroup, BuildOptions options = BuildOptions.None | BuildOptions.CompressWithLz4HC)
